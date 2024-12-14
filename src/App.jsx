@@ -13,6 +13,7 @@ function App() {
   function handleChange(e) {
     setCity(e.target.value);
   }
+  console.log(city);
 
   // locatsiyani olish
   useEffect(() => {
@@ -24,29 +25,38 @@ function App() {
     });
   }, []);
 
+  // locatsiya bo'yicha ob-havo malumotini berish
   const fetchLocationWeather = async () => {
-    const response = await API.fetchByLocation(location.lat, location.lon);
-
-    console.log(response);
-    setData(response);
+    try {
+      const response = await API.fetchByLocation(location.lat, location.lon);
+      console.log(response);
+      setData(response);
+    } catch (error) {
+      console.log("error", error);
+    }
   };
 
-  const fetchCityWeather = async () => {
-    const response = await API.fetchByCityName(city);
-
-    console.log(response);
-    setCity(response);
+  // shaxar nomi bo'yicha ob-havo malumotini berish
+  const fetchCityWeather = async (event) => {
+    event.preventDefault();
+    try {
+      const city = event.target?.[0].value;
+      const response = await API.fetchByCityName(city);
+      console.log(response);
+      setData(response);
+    } catch (error) {
+      console.log("error", error);
+    }
   };
 
+  // fetchLocationWeather(), funcsiyasini chaqirish
   useEffect(() => {
     if (location?.lat && location?.lon) {
       fetchLocationWeather();
-    } else if (city) {
-      fetchCityWeather();
     }
-    setIsloading(false);
   }, [location?.lat, location?.lon]);
 
+  // API dan ma'lumot kelmay qolganda ekranga loading yozuvini chiqarish
   if (isloading || !data?.main) {
     return <h1>Loading...</h1>;
   }
@@ -61,7 +71,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <form className={styles.app_form}>
+      <form className={styles.app_form} onSubmit={fetchCityWeather}>
         <input
           type="text"
           onChange={handleChange}
