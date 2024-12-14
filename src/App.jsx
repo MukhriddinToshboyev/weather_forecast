@@ -1,32 +1,18 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import styles from "./weather.module.css";
-
-const API_KEY = import.meta.env.VITE_API_KEY;
+import { API } from "./services/api";
 
 function App() {
   const [data, setData] = useState(null);
   const [location, setLocation] = useState({});
   const [isloading, setIsloading] = useState(false);
-  const [input, setInput] = useState(null);
-  // const [sityWeather, setSityWeather] = useState({});
+  const [city, setCity] = useState(null);
 
   // inputni qiymatini olish
   function handleChange(e) {
-    setInput(e.target.value);
+    setCity(e.target.value);
   }
-
-  // inputni tozalash
-  // const async handleSubmit = (e)=>  {
-  //   e.prevetDefault();
-
-  //     if (response.ok) {
-  //       setData(data);
-  //     } else {
-  //       setData(null);
-  //     }
-  //   }
-  // }
 
   // locatsiyani olish
   useEffect(() => {
@@ -38,38 +24,25 @@ function App() {
     });
   }, []);
 
-  // API manzilini olish
+  const fetchLocationWeather = async () => {
+    const response = await API.fetchByLocation(location.lat, location.lon);
 
-  // const one_API = `https:api.openweathermap.org/data/2.5/weather?q=${input}&units=metric&appid=${API_KEY} `;
-  // setSityWeather(one_API);
+    console.log(response);
+    setData(response);
+  };
 
-  // console.log(sityWeather);
+  const fetchCityWeather = async () => {
+    const response = await API.fetchByCityName(city);
 
-  // function API_adress() {
-  //   if (sityWeather) {
-  //     ` https:api.openweathermap.org/data/2.5/weather?lat=${location?.lat}&lon=${location?.lon}&units=metric&appid=${API_KEY}`;
-  //   } else {
-  //     return;
-  //   }
-  // }
+    console.log(response);
+    setCity(response);
+  };
 
   useEffect(() => {
-    const fetchWeatherData = async () => {
-      setIsloading(true);
-      const response = await fetch(
-        ` https:api.openweathermap.org/data/2.5/weather?lat=${location?.lat}&lon=${location?.lon}&units=metric&appid=${API_KEY}`
-      );
-      const data = await response.json();
-      console.log(data);
-
-      if (response.ok) {
-        setData(data);
-      } else {
-        setData(null);
-      }
-    };
     if (location?.lat && location?.lon) {
-      fetchWeatherData();
+      fetchLocationWeather();
+    } else if (city) {
+      fetchCityWeather();
     }
     setIsloading(false);
   }, [location?.lat, location?.lon]);
@@ -88,7 +61,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <form onSubmit={handleSubmit} className={styles.app_form}>
+      <form className={styles.app_form}>
         <input
           type="text"
           onChange={handleChange}
